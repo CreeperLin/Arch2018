@@ -46,8 +46,11 @@ Run the controller
     ./run.sh uart-port
 
 the UART port should look like:
+
 on Linux: /dev/ttyUSB1
+
 on WSL: /dev/ttyS4
+
 on Windows: COM3 (not tested)
 
 ### RISC-V ISA Assignment
