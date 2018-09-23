@@ -19,11 +19,12 @@ module adder(
 	//
 	// Hint: 
 	//   The module needs 4 ports, 
-	//     the first 2 ports are 16-bit unsigned numbers as the inputs of the adder
-	//     the third port is a 16-bit unsigned number as the output
-	//	   the forth port is a one bit port as the carry flag
+	//     the first 2 ports input two 16-bit unsigned numbers as the addends
+	//     the third port outputs a 16-bit unsigned number as the sum
+	//	   the forth port outputs a 1-bit carry flag as the overflow
 	// 
 );
 	// TODO: Implement this module here
+	// Hint: You can use generate statement in Verilog to create multiple instantiations of modules and code.
 	
 endmodule
