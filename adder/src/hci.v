@@ -10,7 +10,7 @@ module hci
     input           rx,
     output          tx,
     
-    input           adder_ans,
+    input  [15:0]   adder_ans,
     input           adder_carry,
     output [15:0]   adder_opr1,
     output [15:0]   adder_opr2
@@ -52,8 +52,6 @@ wire       parity_err;
 // Adder input/output
 reg  [15:0] q_adder_opr1,     d_adder_opr1;
 reg  [15:0] q_adder_opr2,     d_adder_opr2;
-wire [15:0] adder_ans;
-wire        adder_carry;
 
 always @(posedge clk)
   begin
@@ -89,11 +87,11 @@ uart #(.SYS_CLK_FREQ(100000000),
 (
   .clk(clk),
   .reset(rst),
-  .rx(RsRx),
+  .rx(rx),
   .tx_data(q_tx_data),
   .rd_en(rd_en),
   .wr_en(q_wr_en),
-  .tx(RsTx),
+  .tx(tx),
   .rx_data(rd_data),
   .rx_empty(rx_empty),
   .tx_full(tx_full),

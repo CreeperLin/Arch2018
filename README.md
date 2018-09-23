@@ -35,7 +35,7 @@ In top directory, clone the serial library and build
     make
     make install
 
-requirements see [wjwwood/serial](https://github.com/wjwwood/serial)
+Dependencies see [wjwwood/serial](https://github.com/wjwwood/serial)
 
 In 'ctrl' folder, build the controller
 
