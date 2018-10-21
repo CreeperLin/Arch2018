@@ -15,7 +15,7 @@
  *
  */
 
-`include "../src/adder.v"
+//`include "../src/adder.v"
 
 module test_adder;
 	wire [15:0] answer;

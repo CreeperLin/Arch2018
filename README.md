@@ -41,7 +41,7 @@ In 'ctrl' folder, build the controller
 
     ./build.sh
 
-Run the controller
+Run the controller (may require superuser privilege)
 
     ./run.sh uart-port
 
