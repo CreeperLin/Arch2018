@@ -1,5 +1,6 @@
 #include "io.h"
 int cd(int d, char* a, char* b, char* c, int sum) {
+    sleep(5); // to prevent UART buffer from overflowing
     if (d == 1) {
         print("move ");
         print(a);

@@ -1,8 +1,14 @@
 #ifndef CPU_JUDGE_TEST_IO_H
 #define CPU_JUDGE_TEST_IO_H
 
-#define BYTE_PORT_IN 0x100
-#define BYTE_PORT_OUT 0x104
+// #define SIM                         // whether in simulation
+
+#define BYTE_PORT_IN 0x30000        // port for reading bytes from input
+#define BYTE_PORT_OUT 0x30000       // port for writing bytes to output
+
+#define CPUCLK_PORT_IN 0x30004      // port that reads clocks passed since cpu starts
+
+#define CPU_CLK_FREQ 70000000       // clock frequency of the cpu on FPGA
 
 static inline unsigned char inb()
 {
@@ -19,17 +25,31 @@ static inline unsigned long inl()
     unsigned long ret = 0;
     unsigned char ch;
     int sign=0;
-    while ((ch=inb())) {
-        if(ch<'0'||ch>'9') break;
+    while ((ch=inb())) if(ch!='\n'&&ch!=' '&&ch!='\t') break;
+    do {
         if(ch=='-'&&!sign) sign=1;
+        else if(ch<'0'||ch>'9') break;
         ret = ret * 10 + ch - '0';
-    }
+    }while ((ch=inb()));
     return sign?-ret:ret;
+}
+
+static inline void getstr(char* data)
+{
+    char c;
+    int i=0;
+    while((c=inb())) data[i++]=c;
+    data[i]='\0';
+}
+
+static inline unsigned int ord(char data)
+{
+    return (unsigned int)data;
 }
 
 static inline void outl(const int data)
 {
-    unsigned char str[13];
+    unsigned char str[12];
     int tmp = data;
     int i=0, s=0;
     if (tmp<0){
@@ -63,4 +83,21 @@ static inline void outlln(const unsigned int data)
     outl(data);
 	outb('\n');
 }
+
+static inline unsigned int clock()
+{
+    return *((volatile unsigned int*)CPUCLK_PORT_IN);
+}
+
+#ifdef SIM
+#define sleep(x) 
+#else
+static inline void sleep(const unsigned int milli_sec)
+{
+    unsigned int s = 0, d = milli_sec * (CPU_CLK_FREQ / 1000);
+    s = clock();
+    while (clock() - s < d);
+}
+#endif
+
 #endif
