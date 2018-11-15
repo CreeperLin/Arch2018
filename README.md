@@ -55,6 +55,14 @@ on Windows: COM3 (not tested)
 
 ### RISC-V ISA Assignment
 
+#### Prerequisite
+
+- serial library (see above)
+- Vivado / iverilog + gtkwave
+- RISC-V GNU Compiler Toolchain (see wiki for details)
+
+#### Overview
+
 - src:  template & support modules for riscv
 - ctrl: controller used for loading RAM data into FPGA BRAM and debugging
 - sys:  basic system and I/O functions
@@ -85,12 +93,14 @@ Intermediate files:
 #### Simulation
 
 modify and run script
-    
+
     ./run_test.sh testname
 
 This will first build the testcase and then run custom commands for simulation.
 
 You can also use custom Makefile to run testcases.
+
+Testcases with input are currently unsupported in simulation, use testcases with no input instead.
 
 #### FPGA testing
 
@@ -131,7 +141,7 @@ CPU Memory Read
     0x03: MEM_ADDR [16]
     0x04: BYTE_COUNT [7:0]
     0x05: BYTE_COUNT [15:8]
-    
+
     return: BYTES
 
 CPU Memory Write
@@ -143,7 +153,7 @@ CPU Memory Write
     0x04: BYTE_COUNT [7:0]
     0x05: BYTE_COUNT [15:8]
     rest: data to write
-    
+
 Break
 
     0x00: opcode: 0x03
@@ -172,3 +182,4 @@ Query Error Code
 
 - In 'sys/rom.s', the sp is now initialized to 0x00020000 (can be enlarged if running in simulation).
 - When running program on FPGA, do not allocate too much(10000+ int) space as the RAM is only 128KB.
+- run ```./configure --prefix=/opt/riscv --with-arch=rv32i --with-abi=ilp32``` before making the RISC-V toolchain.
