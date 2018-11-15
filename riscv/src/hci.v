@@ -234,10 +234,10 @@ always @*
         case (io_sel)
           3'h00: begin      // 0x30000 write: output byte
             if (!tx_full && io_din!=8'h00) begin
-              $write("%c", io_din);
               d_tx_data = io_din;
               d_wr_en   = 1'b1;
             end
+            $write("%c", io_din);
           end
           3'h04: begin      // 0x30004 write: indicates program stop
             if (!tx_full) begin

@@ -62,7 +62,7 @@ ram #(.ADDR_WIDTH(RAM_ADDR_WIDTH))ram0(
 	.d_out(ram_dout)
 );
 
-assign 		ram_en = (cpumc_a[RAM_ADDR_WIDTH] == 1'b1) ? 1'b0 : 1'b1;
+assign 		ram_en = (cpumc_a[RAM_ADDR_WIDTH:RAM_ADDR_WIDTH-1] == 2'b11) ? 1'b0 : 1'b1;
 assign 		ram_a = cpumc_a[RAM_ADDR_WIDTH-1:0];
 
 //
@@ -76,6 +76,7 @@ wire		cpu_rdy;
 
 wire [31:0] cpu_dbgreg_dout;
 
+// fakecpu cpu0(
 cpu cpu0(
 	.clk_in(clk),
 	.rst_in(rst),
@@ -127,7 +128,7 @@ hci #(.SYS_CLK_FREQ(SYS_CLK_FREQ),
 );
 
 assign hci_io_sel	= cpumc_a[2:0];
-assign hci_io_en	= (cpumc_a[RAM_ADDR_WIDTH] == 1'b1) ? 1'b1 : 1'b0;
+assign hci_io_en	= (cpumc_a[RAM_ADDR_WIDTH:RAM_ADDR_WIDTH-1] == 2'b11) ? 1'b1 : 1'b0;
 assign hci_io_wr	= cpumc_wr;
 assign hci_io_din	= cpumc_din;
 

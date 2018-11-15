@@ -64,6 +64,7 @@ on Windows: COM3 (not tested)
 #### Overview
 
 - src:  template & support modules for riscv
+- sim:  source files for simulation (including a demo cpu)
 - ctrl: controller used for loading RAM data into FPGA BRAM and debugging
 - sys:  basic system and I/O functions
 - testcase: test programs written in c
