@@ -2,6 +2,8 @@
 
 Project resources for System(I) 2018 Fall
 
+Stay tuned by pulling this repo to your own.
+
 ## Project Structure & Instruction
 
 ### Adder Assignment
@@ -85,7 +87,7 @@ This will compile 'testcase/testname.c' and output all intermediate files to dir
 
 Intermediate files:
 
-- test/test.c: copcodey of the testcase source file
+- test/test.c: copy of the testcase source file
 - test/test.om: compiled ELF file
 - test/test.data: RAM data that can be read by verilog
 - test/test.bin: RAM data in binary
