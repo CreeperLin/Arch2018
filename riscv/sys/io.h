@@ -86,7 +86,12 @@ static inline void outlln(const unsigned int data)
 
 static inline unsigned int clock()
 {
-    return *((volatile unsigned int*)CPUCLK_PORT_IN);
+    // return *((volatile unsigned int*)CPUCLK_PORT_IN);
+    unsigned t1 = (unsigned)(*((volatile unsigned char *)(CPUCLK_PORT_IN)));
+    unsigned t2 = (unsigned)(*((volatile unsigned char *)(CPUCLK_PORT_IN+1)));
+    unsigned t3 = (unsigned)(*((volatile unsigned char *)(CPUCLK_PORT_IN+2)));
+    unsigned t4 = (unsigned)(*((volatile unsigned char *)(CPUCLK_PORT_IN+3)));
+    return (t4<<24) | (t3<<16) | (t2<<8) | (t1);
 }
 
 #ifdef SIM
