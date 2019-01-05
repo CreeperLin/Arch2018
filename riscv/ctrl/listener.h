@@ -127,8 +127,27 @@ void verify_ram(byte* ram_data, int ram_size) {
 }
 
 int on_recv(byte data) {
+    const char input_prompt = 0x05;
+
     // info("recv: %02x %c\n",data,data);
     info("%c",data);
     fflush(stdout);
-    return data == 0;
+    if (data == 0) return 1;
+
+    if (data==input_prompt) {
+        // info("input>");
+        char buf[1024]={0};
+        fgets(buf,1024,stdin);
+        int len = strlen(buf);
+
+        byte payload[1+2+1024]={0};
+        payload[0] = 0x06;
+        *reinterpret_cast<word*>(payload+1) = len;
+        for (int i = 0; i < len; ++i) {
+            payload[i+3] = buf[i];
+        }
+        uart_send(payload,3+len);
+    }
+
+    return 0;
 }

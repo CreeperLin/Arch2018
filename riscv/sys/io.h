@@ -10,9 +10,19 @@
 
 #define CPU_CLK_FREQ 70000000       // clock frequency of the cpu on FPGA
 
+static inline unsigned char inputb()
+{
+    *((volatile unsigned char *)BYTE_PORT_OUT) = 0x05;
+    unsigned char c=0x00;
+    while ((c=*((volatile unsigned char *)BYTE_PORT_IN))==0x00);
+    return c;
+}
+
 static inline unsigned char inb()
 {
-	return *((volatile unsigned char *)BYTE_PORT_IN);
+	unsigned char c = *((volatile unsigned char *)BYTE_PORT_IN);
+    if (c==0x00) return inputb();
+	return c;
 }
 
 static inline void outb(const unsigned char data)

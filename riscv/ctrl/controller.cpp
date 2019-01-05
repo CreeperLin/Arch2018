@@ -132,6 +132,9 @@ void run() {
             info("\n");
         }
         else if (c=='r') {
+            // flush stdin
+            char ch=0;
+            while ((ch=getchar())!='\n'&&ch!=EOF);
             // run or pause cpu
             byte send[2];
             send[0]=(run?0x03:0x04);
