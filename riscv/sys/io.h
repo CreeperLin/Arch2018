@@ -38,7 +38,7 @@ static inline void getstr(char* data)
 {
     char c;
     int i=0;
-    while((c=inb())) data[i++]=c;
+    while((c=inb())!='\n') data[i++]=c;
     data[i]='\0';
 }
 

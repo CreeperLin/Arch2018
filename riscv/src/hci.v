@@ -46,7 +46,7 @@ module hci
   input   wire  [ 2:0]                io_sel,           // I/O port select
   input   wire                        io_en,            // I/O enable signal
   input   wire  [ 7:0]                io_din,           // I/O data input bus
-  output  reg   [ 7:0]                io_dout,          // I/O data output bus
+  output  wire  [ 7:0]                io_dout,          // I/O data output bus
   input   wire                        io_wr,            // I/O write/read select
 
   input   wire  [31:0]                cpu_dbgreg_din    // cpu debug register read bus
@@ -111,6 +111,7 @@ wire [ 7:0] io_in_rd_data;
 wire        io_in_empty;
 wire        io_in_full;
 reg         q_io_en;
+reg  [ 7:0] q_io_dout, d_io_dout;
 
 // Input Buffer
 fifo #(.DATA_BITS(8),
@@ -154,7 +155,8 @@ always @(posedge clk)
         q_io_in_wr_en      <= 1'b0;
         q_io_in_wr_data    <= 8'h00;
         q_io_en            <= 1'b0;
-        q_cpu_cycle_cnt    <= 8'b00;
+        q_cpu_cycle_cnt    <= 8'h00;
+        q_io_dout          <= 8'h00;
       end
     else
       begin
@@ -169,6 +171,7 @@ always @(posedge clk)
         q_io_in_wr_data    <= d_io_in_wr_data;
         q_io_en            <= io_en;
         q_cpu_cycle_cnt    <= d_cpu_cycle_cnt;
+        q_io_dout          <= d_io_dout;
       end
   end
 
@@ -194,15 +197,15 @@ uart #(.SYS_CLK_FREQ(SYS_CLK_FREQ),
 
 always @*
   begin
-    io_dout = 8'h00;
+    d_io_dout = 8'h00;
     if (io_en & !io_wr)
       begin
         case (io_sel)
-          3'h00: io_dout = io_in_rd_data;
-          3'h04: io_dout = q_cpu_cycle_cnt[7:0];
-          3'h05: io_dout = q_cpu_cycle_cnt[15:8];
-          3'h06: io_dout = q_cpu_cycle_cnt[23:16];
-          3'h07: io_dout = q_cpu_cycle_cnt[31:24];
+          3'h00: d_io_dout = io_in_rd_data;
+          3'h04: d_io_dout = q_cpu_cycle_cnt[7:0];
+          3'h05: d_io_dout = q_cpu_cycle_cnt[15:8];
+          3'h06: d_io_dout = q_cpu_cycle_cnt[23:16];
+          3'h07: d_io_dout = q_cpu_cycle_cnt[31:24];
         endcase
       end
   end
@@ -564,5 +567,6 @@ always @*
 assign active      = (q_state != S_DISABLED);
 assign ram_a       = q_addr;
 assign ram_dout    = rd_data;
+assign io_dout     = q_io_dout;
 
 endmodule

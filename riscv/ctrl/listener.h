@@ -73,8 +73,7 @@ void upload_ram(byte* ram_data, int ram_size) {
 void upload_input(byte* in_data, int in_size) {
     if (!in_size) return;
     const int short blk_size = 0x40;
-    const int pld_size = 1+2+blk_size;
-    byte payload[pld_size]={0};
+    byte payload[3+blk_size]={0};
     int blk_cnt = (in_size / blk_size);
     if (blk_cnt*blk_size<in_size) ++blk_cnt;
     info("uploading INPUT: %x blks:%d\n", in_size, blk_cnt);
@@ -84,15 +83,18 @@ void upload_input(byte* in_data, int in_size) {
     payload[4] = 0x20;
     *reinterpret_cast<word*>(payload+1) = pre_size;
     uart_send(payload,1+2+pre_size);
+    int rem_size = in_size;
     for (int i=0; i<blk_cnt; ++i) {
         unsigned int offset = i * blk_size;
         info("blk:%i ofs:%04x\n",i,offset);
         payload[0] = 0x05;
-        *reinterpret_cast<word*>(payload+1) = blk_size;
-        for (int j=0;j<blk_size;++j) {
+        int dat_size = (rem_size<blk_size) ? rem_size : blk_size;
+        *reinterpret_cast<word*>(payload+1) = dat_size;
+        for (int j=0;j<dat_size;++j) {
             payload[3+j] = (byte)in_data[offset+j];
         }
-        uart_send(payload,pld_size);
+        uart_send(payload,1+2+dat_size);
+        rem_size -= dat_size;
     }
     info("INPUT uploaded\n");
     std::this_thread::sleep_for(std::chrono::seconds(1));
