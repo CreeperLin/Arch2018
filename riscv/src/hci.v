@@ -59,6 +59,7 @@ localparam [7:0] OP_ECHO                 = 8'h00,
                  OP_DBG_BRK              = 8'h03,
                  OP_DBG_RUN              = 8'h04,
                  OP_IO_IN                = 8'h05,
+                 OP_INPUT                = 8'h06,
                  OP_QUERY_DBG_BRK        = 8'h07,
                  OP_QUERY_ERR_CODE       = 8'h08,
                  OP_MEM_RD               = 8'h09,
@@ -83,6 +84,8 @@ localparam [4:0] S_DISABLED             = 5'h00,
                  S_MEM_RD_STG_1         = 5'h0A,
                  S_MEM_WR_STG_0         = 5'h0B,
                  S_MEM_WR_STG_1         = 5'h0C,
+                 S_INPUT_STG_0          = 5'h0D,
+                 S_INPUT_STG_1          = 5'h0E,
                  S_DISABLE              = 5'h10;
 
 reg [ 4:0]                  q_state,            d_state;
@@ -201,7 +204,7 @@ always @*
     if (io_en & !io_wr)
       begin
         case (io_sel)
-          3'h00: d_io_dout = io_in_rd_data;
+          3'h00: d_io_dout = (io_in_empty || q_state != S_DISABLED) ? 8'h00 : io_in_rd_data;
           3'h04: d_io_dout = q_cpu_cycle_cnt[7:0];
           3'h05: d_io_dout = q_cpu_cycle_cnt[15:8];
           3'h06: d_io_dout = q_cpu_cycle_cnt[23:16];
@@ -232,7 +235,7 @@ always @*
     if (parity_err)
       d_err_code[DBG_UART_PARITY_ERR] = 1'b1;
 
-    if (~q_io_en & io_en) begin
+    if (~q_io_en && io_en && (q_state == S_DISABLED)) begin
       if (io_wr) begin
         case (io_sel)
           3'h00: begin      // 0x30000 write: output byte
@@ -258,11 +261,6 @@ always @*
               io_in_rd_en = 1'b1;
             end
             // $display("IO:in:%c",io_dout);
-            if (!rx_empty && !io_in_full) begin
-              rd_en   = 1'b1;
-              d_io_in_wr_data = rd_data;
-              d_io_in_wr_en = 1'b1;
-            end
           end
         endcase
       end
@@ -282,6 +280,11 @@ always @*
                 begin
                   d_tx_data = 8'h00;  // Write "0" over UART to indicate we are not in a debug break
                   d_wr_en   = 1'b1;
+                end
+              else if (rd_data == OP_INPUT)
+                begin
+                  d_decode_cnt = 0;
+                  d_state = S_INPUT_STG_0;
                 end
             end
         end
@@ -559,12 +562,54 @@ always @*
             end
         end
 
+      // --- INPUT ---
+      //   OP_CODE
+      //   CNT_LO
+      //   CNT_HI
+      //   DATA
+      S_INPUT_STG_0:
+        begin
+          if (!rx_empty)
+            begin
+              rd_en        = 1'b1;                 // pop packet byte off uart fifo
+              d_decode_cnt = q_decode_cnt + 3'h1;  // advance to next decode stage
+              if (q_decode_cnt == 0)
+                begin
+                  // Read CNT_LO into low bits of execute count.
+                  d_execute_cnt = rd_data;
+                end
+              else
+                begin
+                  // Read CNT_HI into high bits of execute count.
+                  d_execute_cnt = { rd_data, q_execute_cnt[7:0] };
+                  d_state = (d_execute_cnt) ? S_INPUT_STG_1 : S_DECODE;
+                end
+            end
+        end
+
+      S_INPUT_STG_1:
+        begin
+          if (!rx_empty)
+            begin
+              rd_en         = 1'b1;                       // pop packet byte off uart fifo
+              d_execute_cnt = q_execute_cnt - 17'h00001;  // advance to next execute stage
+
+              if (!io_in_full) begin
+                d_io_in_wr_data = rd_data;
+                d_io_in_wr_en = 1'b1;
+              end
+
+              if (d_execute_cnt == 0)
+                d_state = S_DISABLED;
+            end
+        end
+
     endcase
     end
     
   end
 
-assign active      = (q_state != S_DISABLED);
+assign active      = (q_state != S_DISABLED && q_state != S_INPUT_STG_0 && q_state != S_INPUT_STG_1);
 assign ram_a       = q_addr;
 assign ram_dout    = rd_data;
 assign io_dout     = q_io_dout;
